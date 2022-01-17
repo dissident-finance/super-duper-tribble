@@ -290,4 +290,41 @@ contract DistTokenGovernance is Initializable, ERC20, ERC20Detailed, ReentrancyG
         return _tokenPrice();
     }
 
+
+    function _tokenPrice() internal view returns (uint256 price) {
+        uint256 totSupply = totalSupply();
+        if (totSupply == 0) {
+            return 10**(tokenDecimals);
+        }
+
+        address currToken;
+        uint256 totNav = _contractBalanceOf(token).mul(ONE_18); // eventual underlying unlent balance
+        address[] memory _allAvailableTokens = allAvailableTokens;
+        for (uint256 i = 0; i < _allAvailableTokens.length; i++) {
+            currToken = _allAvailableTokens[i];
+            totNav = totNav.add(
+                // NAV = price * poolSupply
+                _getPriceInToken(protocolWrappers[currToken]).mul(
+                    _contractBalanceOf(currToken)
+                )
+            );
+        }
+
+        price = totNav.div(totSupply); // idleToken price in token wei
+    }
+
+    function _contractBalanceOf(address _token) private view returns (uint256) {
+        // Original implementation:
+        //
+        // return IERC20(_token).balanceOf(address(this));
+
+        // Optimized implementation inspired by uniswap https://github.com/Uniswap/uniswap-v3-core/blob/main/contracts/UniswapV3Pool.sol#L144
+        //
+        // 0x70a08231 -> selector for 'function balanceOf(address) returns (uint256)'
+        (bool success, bytes memory data) =
+            _token.staticcall(abi.encodeWithSelector(0x70a08231, address(this)));
+        require(success);
+        return abi.decode(data, (uint256));
+    }
+
 }
