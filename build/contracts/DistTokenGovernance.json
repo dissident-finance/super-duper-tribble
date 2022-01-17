@@ -4209,7 +4209,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.3",
-  "updatedAt": "2022-01-17T20:43:52.853Z",
+  "updatedAt": "2022-01-17T20:54:56.231Z",
   "devdoc": {
     "methods": {
       "allowance(address,address)": {
