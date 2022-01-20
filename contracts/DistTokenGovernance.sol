@@ -17,6 +17,11 @@ import "@openzeppelin/contracts-ethereum-package/contracts/lifecycle/Pausable.so
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
 import "./interfaces/ILendingProtocol.sol";
+import "./interfaces/DistController.sol";
+import "./interfaces/IAaveIncentivesController.sol";
+import "./interfaces/AToken.sol";
+import "./interfaces/Comptroller.sol";
+import "./interfaces/CERC20.sol";
 
 
 contract DistTokenGovernance is Initializable, ERC20, ERC20Detailed, ReentrancyGuard, Ownable, Pausable {
@@ -49,6 +54,12 @@ contract DistTokenGovernance is Initializable, ERC20, ERC20Detailed, ReentrancyG
     mapping(address => address) public protocolWrappers;
     // Map that saves avg distToken price paid for each user, used to calculate earnings
     mapping(address => uint256) public userAvgPrices;
+    // global indices for each gov tokens used as a reference to calculate a fair share for each user
+    mapping (address => uint256) public govTokensIndexes;
+    // array with last balance recorded for each gov tokens
+    mapping (address => uint256) public govTokensLastBalances;
+    // govToken -> user_address -> user_index eg. usersGovTokensIndexes[govTokens[0]][msg.sender] = 1111123;
+    mapping (address => mapping (address => uint256)) public usersGovTokensIndexes;
 
     // DistToken helper address
     address public tokenHelper;
@@ -72,6 +83,12 @@ contract DistTokenGovernance is Initializable, ERC20, ERC20Detailed, ReentrancyG
     mapping(address => address) private protocolTokenToGov;
     // last allocations submitted by rebalancer
     uint256[] private lastRebalancerAllocations;
+    // variable used for avoid the call of mint and redeem in the same tx
+    bytes32 private _minterBlock;
+
+    // Events
+    event Rebalance(address _rebalancer, uint256 _amount);
+    event Referral(uint256 _amount, address _ref);
 
     // ERROR MESSAGES:
     // 0 = is 0
@@ -315,7 +332,7 @@ contract DistTokenGovernance is Initializable, ERC20, ERC20Detailed, ReentrancyG
             );
         }
 
-        price = totNav.div(totSupply); // idleToken price in token wei
+        price = totNav.div(totSupply); // distToken price in token wei
     }
 
     function _contractBalanceOf(address _token) private view returns (uint256) {
@@ -340,6 +357,196 @@ contract DistTokenGovernance is Initializable, ERC20, ERC20Detailed, ReentrancyG
     */
     function _getPriceInToken(address _token) private view returns (uint256) {
         return ILendingProtocol(_token).getPriceInToken();
+    }
+
+
+    // external
+    /**
+    * Used to mint DistTokens, given an underlying amount (eg. DAI).
+    * This method triggers a rebalance of the pools if _skipRebalance is set to false
+    * NOTE: User should 'approve' _amount of tokens before calling mintDistToken
+    * NOTE 2: this method can be paused
+    *
+    * @param _amount : amount of underlying token to be lended
+    * @param : not used anymore
+    * @param _referral : referral address
+    * @return mintedTokens : amount of DistTokens minted
+    */
+    function mintDistToken(uint256 _amount, bool, address _referral)
+        external nonReentrant whenNotPaused
+        returns (uint256 mintedTokens) {
+        _minterBlock = keccak256(abi.encodePacked(tx.origin, block.number));
+        _redeemGovTokens(msg.sender);
+        // Get current DistToken price
+        uint256 distPrice = _tokenPrice();
+        // transfer tokens to this contract
+        IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
+
+        mintedTokens = _amount.mul(ONE_18).div(distPrice);
+        _mint(msg.sender, mintedTokens);
+
+        // Update avg price and user idx for each gov tokens
+        _updateUserInfo(msg.sender, mintedTokens);
+        _updateUserFeeInfo(msg.sender, mintedTokens, distPrice);
+
+        if (_referral != address(0)) {
+        emit Referral(_amount, _referral);
+        }
+    }
+
+    /**
+    * Redeem unclaimed governance tokens and update governance global index and user index if needed
+    * if called during redeem it will send all gov tokens accrued by a user to the user
+    *
+    * @param _to : user address
+    */
+    function _redeemGovTokens(address _to) internal {
+        _redeemGovTokensInternal(_to, new bool[](govTokens.length));
+    }
+
+
+    /**
+    * Redeem unclaimed governance tokens and update governance global index and user index if needed
+    * if called during redeem it will send all gov tokens accrued by a user to the user
+    *
+    * @param _to : user address
+    * @param _skipGovTokenRedeem : array of flag for redeeming or not gov tokens
+    */
+    function _redeemGovTokensInternal(address _to, bool[] memory _skipGovTokenRedeem) internal {
+        address[] memory _govTokens = govTokens;
+        if (_govTokens.length == 0) {
+        return;
+        }
+        uint256 supply = totalSupply();
+        uint256 usrBal = balanceOf(_to);
+        address govToken;
+
+        if (supply > 0) {
+        for (uint256 i = 0; i < _govTokens.length; i++) {
+            govToken = _govTokens[i];
+
+            _redeemGovTokensFromProtocol(govToken);
+
+            // get current gov token balance
+            uint256 govBal = _contractBalanceOf(govToken);
+            if (govBal > 0) {
+            // update global index with ratio of govTokens per distToken
+            govTokensIndexes[govToken] = govTokensIndexes[govToken].add(
+                // check how much gov tokens for each distToken we gained since last update
+                govBal.sub(govTokensLastBalances[govToken]).mul(ONE_18).div(supply)
+            );
+            // update global var with current govToken balance
+            govTokensLastBalances[govToken] = govBal;
+            }
+
+            if (usrBal > 0) {
+            uint256 usrIndex = usersGovTokensIndexes[govToken][_to];
+            // check if user has accrued something
+            uint256 delta = govTokensIndexes[govToken].sub(usrIndex);
+            if (delta != 0) {
+                uint256 share = usrBal.mul(delta).div(ONE_18);
+                uint256 bal = _contractBalanceOf(govToken);
+                // To avoid rounding issue
+                if (share > bal) {
+                share = bal;
+                }
+                if (_skipGovTokenRedeem[i]) { // -> gift govTokens[i] accrued to the pool
+                // update global index with ratio of govTokens per distToken
+                govTokensIndexes[govToken] = govTokensIndexes[govToken].add(
+                    // check how much gov tokens for each distToken we gained since last update
+                    share.mul(ONE_18).div(supply.sub(usrBal))
+                );
+                } else {
+                uint256 feeDue;
+                // no fee for DIST governance token
+                if (feeAddress != address(0) && fee > 0 && govToken != DIST) {
+                    feeDue = share.mul(fee).div(FULL_ALLOC);
+                    // Transfer gov token fee to feeAddress
+                    _transferTokens(govToken, feeAddress, feeDue);
+                }
+                // Transfer gov token to user
+                _transferTokens(govToken, _to, share.sub(feeDue));
+                // Update last balance
+                govTokensLastBalances[govToken] = _contractBalanceOf(govToken);
+                }
+            }
+            }
+            // save current index for this gov token
+            usersGovTokensIndexes[govToken][_to] = govTokensIndexes[govToken];
+        }
+        }
+    }
+
+    /**
+    * Helper method for mintDistToken, updates minter gov indexes and avg price
+    *
+    * @param _to : minter account
+    * @param _mintedTokens : number of newly minted tokens
+    */
+    function _updateUserInfo(address _to, uint256 _mintedTokens) internal {
+        address govToken;
+        uint256 usrBal = balanceOf(_to);
+        uint256 _usrIdx;
+
+        for (uint256 i = 0; i < govTokens.length; i++) {
+        govToken = govTokens[i];
+        _usrIdx = usersGovTokensIndexes[govToken][_to];
+
+        // calculate user idx
+        usersGovTokensIndexes[govToken][_to] = _usrIdx.add(
+            _mintedTokens.mul(govTokensIndexes[govToken].sub(_usrIdx)).div(usrBal)
+        );
+        }
+    }
+
+    /**
+    * Update receiver userAvgPrice paid for each dist token,
+    * receiver will pay fees accrued
+    *
+    * @param usr : user that should have balance update
+    * @param qty : new amount deposited / transferred, in distToken
+    * @param price : sender userAvgPrice
+    */
+    function _updateUserFeeInfo(address usr, uint256 qty, uint256 price) private {
+        uint256 usrBal = balanceOf(usr);
+        // ((avgPrice * oldBalance) + (senderAvgPrice * newQty)) / totBalance
+        userAvgPrices[usr] = userAvgPrices[usr].mul(usrBal.sub(qty)).add(price.mul(qty)).div(usrBal);
+    }
+
+    /**
+    * Redeem a specific gov token
+    *
+    * @param _govToken : address of the gov token to redeem
+    */
+    function _redeemGovTokensFromProtocol(address _govToken) internal {
+        // In case new Gov tokens will be supported this should be updated
+        if (_govToken == COMP || _govToken == DIST || _govToken == stkAAVE) {
+        address[] memory holders = new address[](1);
+        holders[0] = address(this);
+
+        if (_govToken == DIST) {
+            // For DIST, the distribution is done only to DistTokens, so `holders` and
+            // `tokens` parameters are the same and equal to address(this)
+            DistController(distController).claimDist(holders, holders);
+            return;
+        }
+
+        address[] memory tokens = new address[](1);
+        if (_govToken == stkAAVE && aToken != address(0)) {
+            tokens[0] = aToken;
+            IAaveIncentivesController _ctrl = IAaveIncentivesController(AToken(tokens[0]).getIncentivesController());
+            _ctrl.claimRewards(tokens, _ctrl.getUserUnclaimedRewards(address(this)), address(this));
+            return;
+        }
+        if (cToken != address(0)) {
+            tokens[0] = cToken;
+            Comptroller(CERC20(tokens[0]).comptroller()).claimComp(holders, tokens, false, true);
+        }
+        }
+    }
+
+    function _transferTokens(address _token, address _to, uint256 _amount) internal {
+        IERC20(_token).safeTransfer(_to, _amount);
     }
 
 }
