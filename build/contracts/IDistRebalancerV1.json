@@ -1,0 +1,507 @@
+{
+  "contractName": "IDistRebalancerV1",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getAllocations",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "_allocations",
+          "type": "uint256[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "_allocations",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "address[]",
+          "name": "_addresses",
+          "type": "address[]"
+        }
+      ],
+      "name": "setAllocations",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"getAllocations\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"_allocations\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"_allocations\",\"type\":\"uint256[]\"},{\"internalType\":\"address[]\",\"name\":\"_addresses\",\"type\":\"address[]\"}],\"name\":\"setAllocations\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"project:/contracts/interfaces/IDistRebalancerV1.sol\":\"IDistRebalancerV1\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":1},\"remappings\":[]},\"sources\":{\"project:/contracts/interfaces/IDistRebalancerV1.sol\":{\"keccak256\":\"0xbfba263bb86bcdb5b6693b3e6d249ff1f8a484747f5710b2f8be4e0cef95d379\",\"urls\":[\"bzz-raw://515f3c619d02668c058c5ce8ee4b8d19f07d11fa37822294f360860258060049\",\"dweb:/ipfs/QmcggRqj3vq2bZRT4CdGqTbLUFrLZRTR8pqB7SnSW1NBEh\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "/**\r\n * @title: Idle Rebalancer interface\r\n * @author: Idle Labs Inc., idle.finance\r\n */\r\npragma solidity 0.5.16;\r\n\r\ninterface IDistRebalancerV1 {\r\n  function getAllocations() external view returns (uint256[] memory _allocations);\r\n  function setAllocations(uint256[] calldata _allocations, address[] calldata _addresses) external;\r\n}\r\n",
+  "sourcePath": "C:\\Users\\Akanimoh Osutuk\\Documents\\Personal\\dissident\\dissident-contracts\\contracts\\interfaces\\IDistRebalancerV1.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/interfaces/IDistRebalancerV1.sol",
+    "exportedSymbols": {
+      "IDistRebalancerV1": [
+        2968
+      ]
+    },
+    "id": 2969,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2952,
+        "literals": [
+          "solidity",
+          "0.5",
+          ".16"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "90:23:19"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 2968,
+        "linearizedBaseContracts": [
+          2968
+        ],
+        "name": "IDistRebalancerV1",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 2958,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getAllocations",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2953,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "173:2:19"
+            },
+            "returnParameters": {
+              "id": 2957,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2956,
+                  "name": "_allocations",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2958,
+                  "src": "199:29:19",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
+                    "typeString": "uint256[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 2954,
+                      "name": "uint256",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "199:7:19",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "id": 2955,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "199:9:19",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                      "typeString": "uint256[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "198:31:19"
+            },
+            "scope": 2968,
+            "src": "150:80:19",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 2967,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "setAllocations",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2965,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2961,
+                  "name": "_allocations",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2967,
+                  "src": "258:31:19",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_calldata_ptr",
+                    "typeString": "uint256[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 2959,
+                      "name": "uint256",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "258:7:19",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "id": 2960,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "258:9:19",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                      "typeString": "uint256[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2964,
+                  "name": "_addresses",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2967,
+                  "src": "291:29:19",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_calldata_ptr",
+                    "typeString": "address[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 2962,
+                      "name": "address",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "291:7:19",
+                      "stateMutability": "nonpayable",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "id": 2963,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "291:9:19",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                      "typeString": "address[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "257:64:19"
+            },
+            "returnParameters": {
+              "id": 2966,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "330:0:19"
+            },
+            "scope": 2968,
+            "src": "234:97:19",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 2969,
+        "src": "117:217:19"
+      }
+    ],
+    "src": "90:246:19"
+  },
+  "legacyAST": {
+    "attributes": {
+      "absolutePath": "project:/contracts/interfaces/IDistRebalancerV1.sol",
+      "exportedSymbols": {
+        "IDistRebalancerV1": [
+          2968
+        ]
+      }
+    },
+    "children": [
+      {
+        "attributes": {
+          "literals": [
+            "solidity",
+            "0.5",
+            ".16"
+          ]
+        },
+        "id": 2952,
+        "name": "PragmaDirective",
+        "src": "90:23:19"
+      },
+      {
+        "attributes": {
+          "baseContracts": [
+            null
+          ],
+          "contractDependencies": [
+            null
+          ],
+          "contractKind": "interface",
+          "documentation": null,
+          "fullyImplemented": false,
+          "linearizedBaseContracts": [
+            2968
+          ],
+          "name": "IDistRebalancerV1",
+          "scope": 2969
+        },
+        "children": [
+          {
+            "attributes": {
+              "body": null,
+              "documentation": null,
+              "implemented": false,
+              "isConstructor": false,
+              "kind": "function",
+              "modifiers": [
+                null
+              ],
+              "name": "getAllocations",
+              "scope": 2968,
+              "stateMutability": "view",
+              "superFunction": null,
+              "visibility": "external"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 2953,
+                "name": "ParameterList",
+                "src": "173:2:19"
+              },
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "name": "_allocations",
+                      "scope": 2958,
+                      "stateVariable": false,
+                      "storageLocation": "memory",
+                      "type": "uint256[]",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "length": null,
+                          "type": "uint256[]"
+                        },
+                        "children": [
+                          {
+                            "attributes": {
+                              "name": "uint256",
+                              "type": "uint256"
+                            },
+                            "id": 2954,
+                            "name": "ElementaryTypeName",
+                            "src": "199:7:19"
+                          }
+                        ],
+                        "id": 2955,
+                        "name": "ArrayTypeName",
+                        "src": "199:9:19"
+                      }
+                    ],
+                    "id": 2956,
+                    "name": "VariableDeclaration",
+                    "src": "199:29:19"
+                  }
+                ],
+                "id": 2957,
+                "name": "ParameterList",
+                "src": "198:31:19"
+              }
+            ],
+            "id": 2958,
+            "name": "FunctionDefinition",
+            "src": "150:80:19"
+          },
+          {
+            "attributes": {
+              "body": null,
+              "documentation": null,
+              "implemented": false,
+              "isConstructor": false,
+              "kind": "function",
+              "modifiers": [
+                null
+              ],
+              "name": "setAllocations",
+              "scope": 2968,
+              "stateMutability": "nonpayable",
+              "superFunction": null,
+              "visibility": "external"
+            },
+            "children": [
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "name": "_allocations",
+                      "scope": 2967,
+                      "stateVariable": false,
+                      "storageLocation": "calldata",
+                      "type": "uint256[]",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "length": null,
+                          "type": "uint256[]"
+                        },
+                        "children": [
+                          {
+                            "attributes": {
+                              "name": "uint256",
+                              "type": "uint256"
+                            },
+                            "id": 2959,
+                            "name": "ElementaryTypeName",
+                            "src": "258:7:19"
+                          }
+                        ],
+                        "id": 2960,
+                        "name": "ArrayTypeName",
+                        "src": "258:9:19"
+                      }
+                    ],
+                    "id": 2961,
+                    "name": "VariableDeclaration",
+                    "src": "258:31:19"
+                  },
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "name": "_addresses",
+                      "scope": 2967,
+                      "stateVariable": false,
+                      "storageLocation": "calldata",
+                      "type": "address[]",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "length": null,
+                          "type": "address[]"
+                        },
+                        "children": [
+                          {
+                            "attributes": {
+                              "name": "address",
+                              "stateMutability": "nonpayable",
+                              "type": "address"
+                            },
+                            "id": 2962,
+                            "name": "ElementaryTypeName",
+                            "src": "291:7:19"
+                          }
+                        ],
+                        "id": 2963,
+                        "name": "ArrayTypeName",
+                        "src": "291:9:19"
+                      }
+                    ],
+                    "id": 2964,
+                    "name": "VariableDeclaration",
+                    "src": "291:29:19"
+                  }
+                ],
+                "id": 2965,
+                "name": "ParameterList",
+                "src": "257:64:19"
+              },
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 2966,
+                "name": "ParameterList",
+                "src": "330:0:19"
+              }
+            ],
+            "id": 2967,
+            "name": "FunctionDefinition",
+            "src": "234:97:19"
+          }
+        ],
+        "id": 2968,
+        "name": "ContractDefinition",
+        "src": "117:217:19"
+      }
+    ],
+    "id": 2969,
+    "name": "SourceUnit",
+    "src": "90:246:19"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.3",
+  "updatedAt": "2022-01-20T13:05:28.225Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}

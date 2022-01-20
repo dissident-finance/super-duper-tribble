@@ -8,15 +8,15 @@
 pragma solidity 0.5.16;
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
-
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
-
 import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/lifecycle/Pausable.sol";
 
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
+
+import "./interfaces/ILendingProtocol.sol";
 
 
 contract DistTokenGovernance is Initializable, ERC20, ERC20Detailed, ReentrancyGuard, Ownable, Pausable {
@@ -24,6 +24,7 @@ contract DistTokenGovernance is Initializable, ERC20, ERC20Detailed, ReentrancyG
     using SafeMath for uint256;
 
     // State variables
+    uint256 private constant ONE_18 = 10**18;
     // eg. DAI address
     address public token;
     // eg. iDAI address
@@ -38,12 +39,16 @@ contract DistTokenGovernance is Initializable, ERC20, ERC20Detailed, ReentrancyG
     uint256 public maxUnlentPerc; // 100000 == 100% -> 1000 == 1%
     // Current fee on interest gained
     uint256 public fee;
+    // eg. 18 for DAI
+    uint256 private tokenDecimals;
     // eg. [COMPAddress, CRVAddress, ...]
     address[] public govTokens;
     // eg. [cTokenAddress, iTokenAddress, ...]
     address[] public allAvailableTokens;
     // eg. cTokenAddress => DistCompoundAddress
     mapping(address => address) public protocolWrappers;
+    // Map that saves avg distToken price paid for each user, used to calculate earnings
+    mapping(address => uint256) public userAvgPrices;
 
     // DistToken helper address
     address public tokenHelper;
@@ -325,6 +330,16 @@ contract DistTokenGovernance is Initializable, ERC20, ERC20Detailed, ReentrancyG
             _token.staticcall(abi.encodeWithSelector(0x70a08231, address(this)));
         require(success);
         return abi.decode(data, (uint256));
+    }
+
+    /**
+    * Get price of 1 protocol token in underlyings
+    *
+    * @param _token : address of the protocol token
+    * @return price : price of protocol token
+    */
+    function _getPriceInToken(address _token) private view returns (uint256) {
+        return ILendingProtocol(_token).getPriceInToken();
     }
 
 }
